@@ -410,7 +410,7 @@ func (i *importer) copyfromImports() fileImports {
 	})
 
 	std["context"] = struct{}{}
-	if i.Settings.Go.SqlDriver == SQLDriverGoSQLDriverMySQL {
+	if i.Settings.Go.SqlDriver == string(SQLDriverGoSQLDriverMySQL) {
 		std["io"] = struct{}{}
 		std["fmt"] = struct{}{}
 		std["sync/atomic"] = struct{}{}

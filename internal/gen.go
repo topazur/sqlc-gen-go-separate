@@ -146,17 +146,20 @@ func generate(req *plugin.CodeGenRequest, enums []Enum, structs []Struct, querie
 		SqlcVersion:               req.SqlcVersion,
 	}
 
-	if tctx.UsesCopyFrom && !tctx.SQLDriver.IsPGX() && golang.SqlDriver != SQLDriverGoSQLDriverMySQL {
+	// cmd is copyfrom and SQLDriver is pgx or SQLDriverGoSQLDriverMySQL
+	if tctx.UsesCopyFrom && !tctx.SQLDriver.IsPGX() && golang.SqlDriver != string(SQLDriverGoSQLDriverMySQL) {
 		return nil, errors.New(":copyfrom is only supported by pgx and github.com/go-sql-driver/mysql")
 	}
 
-	if tctx.UsesCopyFrom && golang.SqlDriver == SQLDriverGoSQLDriverMySQL {
+	// cmd is copyfrom and SQLDriver is SQLDriverGoSQLDriverMySQL，参数不支持 time.Time 类型
+	if tctx.UsesCopyFrom && golang.SqlDriver == string(SQLDriverGoSQLDriverMySQL) {
 		if err := checkNoTimesForMySQLCopyFrom(queries); err != nil {
 			return nil, err
 		}
 		tctx.SQLDriver = SQLDriverGoSQLDriverMySQL
 	}
 
+	// cmd is batch* and SQLDriver is pgx
 	if tctx.UsesBatch && !tctx.SQLDriver.IsPGX() {
 		return nil, errors.New(":batch* commands are only supported by pgx")
 	}
@@ -189,7 +192,9 @@ func generate(req *plugin.CodeGenRequest, enums []Enum, structs []Struct, querie
 	output := map[string]string{}
 
 	execute := func(name, templateName string) error {
+		// 二维数组 - 当前文件导入的package信息
 		imports := i.Imports(name)
+		// 防止参数名(query.Arg.Name)与包名冲突
 		replacedQueries := replaceConflictedArg(imports, queries)
 
 		var b bytes.Buffer
