@@ -1,0 +1,58 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - '*'
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: job_release
+    runs-on: ubuntu-latest
+
+    steps:
+      # 克隆仓库
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # 安装依赖
+      - name: Install
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.21.0'
+
+      # 构建代码/产物
+      - name: Build
+        env:
+          FILE_PATH: plugin/sqlc-gen-golang.wasm
+        run: |
+          make
+          export SHA256_SUM=$(openssl dgst -sha256 $FILE_PATH | awk '{print $2}')
+          echo "SHA256_SUM=$SHA256_SUM" >> $GITHUB_ENV
+
+       # 创建 Release
+      - name: Create release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.SQLC_WORKFLOW_RELEASE_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          body: |
+            SHA-256: ${{ env.SHA256_SUM }}.
+          draft: false
+          prerelease: false
+
+      # 上传产物
+      - name: Upload Release Asset
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.SQLC_WORKFLOW_RELEASE_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./plugin/sqlc-gen-golang.wasm
+          asset_name: sqlc-gen-golang.wasm
+          asset_content_type: application/wasm

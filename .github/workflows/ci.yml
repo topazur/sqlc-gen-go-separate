@@ -1,16 +1,25 @@
 name: make
+
 on:
-  push:
-    branches:
-      - main
-  pull_request:
+  workflow_dispatch:
+
 jobs:
   build:
-    name: test
+
+    name: job_ci
     runs-on: ubuntu-latest
+
     steps:
-    - uses: actions/checkout@v3
-    - uses: actions/setup-go@v4
-      with:
-        go-version: '1.21.0'
-    - run: make
+      # 克隆仓库
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # 安装依赖
+      - name: Install
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.21.0'
+
+      # 构建代码/产物
+      - name: Build
+        run: make
