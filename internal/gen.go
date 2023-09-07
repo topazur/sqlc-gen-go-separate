@@ -19,6 +19,7 @@ import (
 type tmplCtx struct {
 	Q           string
 	Package     string
+	TypePackage string
 	SQLDriver   SQLDriver
 	Enums       []Enum
 	Structs     []Struct
@@ -103,6 +104,22 @@ func (t *tmplCtx) codegenQueryRetval(q Query) (string, error) {
 }
 
 func Generate(ctx context.Context, req *plugin.CodeGenRequest) (*plugin.CodeGenResponse, error) {
+	conf, err := patch.New(req.GetPluginOptions())
+	if err != nil {
+		return nil, err
+	}
+
+	patch.PluginTypeCode(
+		conf.TypePackage,
+		conf.TypeOut,
+		conf.ModuleName,
+		req.Settings.Codegen.Out,
+	)
+	// https://github.com/sql-dev/sqlc/blob/3c9ef73dd379613ff682326a58d402f0695f3242/internal/cmd/shim.go#L301
+	req.Settings.Go = patch.PluginGoCode(&conf.Go)
+	req.Settings.Overrides = patch.PluginOverride(req.Settings.Overrides, conf.Overrides)
+	req.Settings.Rename = patch.PluginRenameCode(req.Settings.Rename, conf.Rename)
+
 	enums := buildEnums(req)
 	structs := buildStructs(req)
 	queries, err := buildQueries(req, structs)
@@ -141,6 +158,7 @@ func generate(req *plugin.CodeGenRequest, enums []Enum, structs []Struct, querie
 		SQLDriver:                 parseDriver(golang.SqlPackage),
 		Q:                         "`",
 		Package:                   golang.Package,
+		TypePackage:               patch.GetTypePackage(),
 		Enums:                     enums,
 		Structs:                   structs,
 		SqlcVersion:               req.SqlcVersion,
@@ -212,10 +230,10 @@ func generate(req *plugin.CodeGenRequest, enums []Enum, structs []Struct, querie
 			name += golang.OutputFilesSuffix
 		}
 		if templateName == "modelsFile" {
-			name = patch.GetTypeOutput(golang.Out, "models")
+			name = patch.GetTypeOutput("models")
 		}
 		if templateName == "typeFile" {
-			name = patch.GetTypeOutput(golang.Out, "query")
+			name = patch.GetTypeOutput("query")
 		}
 		if !strings.HasSuffix(name, ".go") {
 			name += ".go"

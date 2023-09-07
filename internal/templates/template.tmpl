@@ -52,7 +52,7 @@ import (
 // versions:
 //   sqlc {{.SqlcVersion}}
 
-package {{.Package}}
+package {{.TypePackage}}
 
 import (
 	{{range imports .SourceName}}
@@ -218,7 +218,7 @@ import (
 //   sqlc {{.SqlcVersion}}
 // source: {{.SourceName}}
 
-package {{.Package}}
+package {{.TypePackage}}
 
 import (
 	{{range imports .SourceName}}
