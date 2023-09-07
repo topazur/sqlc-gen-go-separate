@@ -6,7 +6,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"go/format"
 	"strings"
 	"text/template"
 
@@ -14,6 +13,7 @@ import (
 	"buf.build/gen/go/sqlc/sqlc/protocolbuffers/go/protos/plugin"
 	"github.com/sqlc-dev/sqlc-go/metadata"
 	"github.com/sqlc-dev/sqlc-go/sdk"
+	"github.com/topazur/sqlc-gen-go-separate/internal/patch"
 )
 
 type tmplCtx struct {
@@ -206,20 +206,34 @@ func generate(req *plugin.CodeGenRequest, enums []Enum, structs []Struct, querie
 		if err != nil {
 			return err
 		}
-		code, err := format.Source(b.Bytes())
-		if err != nil {
-			fmt.Println(b.String())
-			return fmt.Errorf("source error: %w", err)
-		}
 
+		// output filename
 		if templateName == "queryFile" && golang.OutputFilesSuffix != "" {
 			name += golang.OutputFilesSuffix
 		}
-
+		if templateName == "modelsFile" {
+			name = patch.GetTypeOutput(golang.Out, "models")
+		}
+		if templateName == "typeFile" {
+			name = patch.GetTypeOutput(golang.Out, "query")
+		}
 		if !strings.HasSuffix(name, ".go") {
 			name += ".go"
 		}
-		output[name] = string(code)
+
+		// gofmt & unusedimports
+		sourceCode, err := patch.FormatTmpl(b.String()).Source()
+		if err != nil {
+			// fmt.Println(sourceCode.String())
+			return fmt.Errorf("format.Source error: %w", err)
+		}
+		unusedCode, err := sourceCode.Unusedimports(name)
+		if err != nil {
+			// fmt.Println(unusedCode.String())
+			return fmt.Errorf("unusedimports error: %w", err)
+		}
+
+		output[name] = unusedCode.String()
 		return nil
 	}
 
@@ -272,6 +286,10 @@ func generate(req *plugin.CodeGenRequest, enums []Enum, structs []Struct, querie
 
 	for source := range files {
 		if err := execute(source, "queryFile"); err != nil {
+			return nil, err
+		}
+		// NOTICE: 由于 SQLGo 模式类型都是生成在query文件里，所以这里无需对 copyfromFileName、batchFileName 两种文件额外处理
+		if err := execute(source, "typeFile"); err != nil {
 			return nil, err
 		}
 	}

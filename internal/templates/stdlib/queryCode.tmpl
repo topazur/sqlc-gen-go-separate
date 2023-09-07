@@ -5,6 +5,7 @@ const {{.ConstantName}} = {{$.Q}}-- name: {{.MethodName}} {{.Cmd}}
 {{escape .SQL}}
 {{$.Q}}
 
+{{/* 抽离type包
 {{if .Arg.EmitStruct}}
 type {{.Arg.Type}} struct { {{- range .Arg.UniqueFields}}
   {{.Name}} {{.Type}} {{if .Tag}}{{$.Q}}{{.Tag}}{{$.Q}}{{end}}
@@ -18,6 +19,7 @@ type {{.Ret.Type}} struct { {{- range .Ret.Struct.Fields}}
   {{- end}}
 }
 {{end}}
+*/}}
 
 {{if eq .Cmd ":one"}}
 {{range .Comments}}//{{.}}

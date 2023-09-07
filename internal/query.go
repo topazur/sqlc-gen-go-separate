@@ -7,6 +7,7 @@ import (
 	// DIFF: replace official's imports
 	"buf.build/gen/go/sqlc/sqlc/protocolbuffers/go/protos/plugin"
 	"github.com/sqlc-dev/sqlc-go/metadata"
+	"github.com/topazur/sqlc-gen-go-separate/internal/patch"
 )
 
 type QueryValue struct {
@@ -76,9 +77,9 @@ func (v QueryValue) Type() string {
 func (v *QueryValue) DefineType() string {
 	t := v.Type()
 	if v.IsPointer() {
-		return "*" + t
+		return "*" + patch.QueryExportedType(t)
 	}
-	return t
+	return patch.QueryExportedType(t)
 }
 
 func (v *QueryValue) ReturnName() string {

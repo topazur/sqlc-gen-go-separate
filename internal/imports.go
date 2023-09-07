@@ -8,6 +8,7 @@ import (
 	// DIFF: replace official's imports
 	"buf.build/gen/go/sqlc/sqlc/protocolbuffers/go/protos/plugin"
 	"github.com/sqlc-dev/sqlc-go/metadata"
+	"github.com/topazur/sqlc-gen-go-separate/internal/patch"
 )
 
 type fileImports struct {
@@ -29,10 +30,14 @@ func (s ImportSpec) String() string {
 }
 
 func mergeImports(imps ...fileImports) [][]ImportSpec {
+	id, path := patch.GetTypeImportParams()
+	typeImport := []ImportSpec{{ID: id, Path: path}}
+
 	if len(imps) == 1 {
 		return [][]ImportSpec{
 			imps[0].Std,
 			imps[0].Dep,
+			typeImport,
 		}
 	}
 
@@ -55,7 +60,7 @@ func mergeImports(imps ...fileImports) [][]ImportSpec {
 			seenPkg[spec.Path] = struct{}{}
 		}
 	}
-	return [][]ImportSpec{stds, pkgs}
+	return [][]ImportSpec{stds, pkgs, typeImport}
 }
 
 type importer struct {
