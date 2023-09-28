@@ -36,7 +36,7 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ({{.Ret.De
 	row := q.db.QueryRow(ctx, {{.ConstantName}}, {{.Arg.Params}})
 {{- end}}
 	{{- if or (ne .Arg.Pair .Ret.Pair) (ne .Arg.DefineType .Ret.DefineType) }}
-	var {{.Ret.Name}} {{.Ret.Type}}
+	var {{.Ret.Name}} {{.Ret.DefineType}}
 	{{- end}}
 	err := row.Scan({{.Ret.Scan}})
 	return {{.Ret.ReturnName}}, err
@@ -63,7 +63,7 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ([]{{.Ret.
 	var items []{{.Ret.DefineType}}
 	{{end -}}
 	for rows.Next() {
-		var {{.Ret.Name}} {{.Ret.Type}}
+		var {{.Ret.Name}} {{.Ret.DefineType}}
 		if err := rows.Scan({{.Ret.Scan}}); err != nil {
 			return nil, err
 		}

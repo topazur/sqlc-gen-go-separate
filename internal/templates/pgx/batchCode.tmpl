@@ -92,7 +92,7 @@ func (b *{{.MethodName}}BatchResults) Query(f func(int, []{{.Ret.DefineType}}, e
        }
        defer rows.Close()
        for rows.Next() {
-           var {{.Ret.Name}} {{.Ret.Type}}
+           var {{.Ret.Name}} {{.Ret.DefineType}}
            if err := rows.Scan({{.Ret.Scan}}); err != nil {
              return err
            }
@@ -111,7 +111,7 @@ func (b *{{.MethodName}}BatchResults) Query(f func(int, []{{.Ret.DefineType}}, e
 func (b *{{.MethodName}}BatchResults) QueryRow(f func(int, {{.Ret.DefineType}}, error)) {
 	defer b.br.Close()
    for t := 0; t < b.tot; t++ {
-     var {{.Ret.Name}} {{.Ret.Type}}
+     var {{.Ret.Name}} {{.Ret.DefineType}}
      if b.closed {
         if f != nil {
           f(t, {{if .Ret.IsPointer}}nil{{else}}{{.Ret.Name}}{{end}}, ErrBatchAlreadyClosed)
