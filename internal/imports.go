@@ -95,6 +95,9 @@ func (i *importer) Imports(filename string) [][]ImportSpec {
 		querierFileName = i.Settings.Go.OutputQuerierFileName
 	}
 	copyfromFileName := "copyfrom.go"
+	// if i.Settings.Go.OutputCopyfromFileName != "" {
+	// 	copyfromFileName = i.Settings.Go.OutputCopyfromFileName
+	// }
 	batchFileName := "batch.go"
 	if i.Settings.Go.OutputBatchFileName != "" {
 		batchFileName = i.Settings.Go.OutputBatchFileName
@@ -248,11 +251,9 @@ func (i *importer) interfaceImports() fileImports {
 					return true
 				}
 			}
-			if !q.Arg.isEmpty() {
-				for _, f := range q.Arg.Fields() {
-					if hasPrefixIgnoringSliceAndPointerPrefix(f.Type, name) {
-						return true
-					}
+			for _, f := range q.Arg.Pairs() {
+				if hasPrefixIgnoringSliceAndPointerPrefix(f.Type, name) {
+					return true
 				}
 			}
 		}
@@ -318,11 +319,18 @@ func (i *importer) queryImports(filename string) fileImports {
 					return true
 				}
 			}
-			if !q.Arg.isEmpty() {
-				for _, f := range q.Arg.Fields() {
+			// Check the fields of the argument struct if it's emitted
+			if q.Arg.EmitStruct() {
+				for _, f := range q.Arg.Struct.Fields {
 					if hasPrefixIgnoringSliceAndPointerPrefix(f.Type, name) {
 						return true
 					}
+				}
+			}
+			// Check the argument pairs inside the method definition
+			for _, f := range q.Arg.Pairs() {
+				if hasPrefixIgnoringSliceAndPointerPrefix(f.Type, name) {
+					return true
 				}
 			}
 		}
@@ -447,15 +455,15 @@ func (i *importer) batchImports() fileImports {
 					return true
 				}
 			}
-			if !q.Arg.isEmpty() {
-				if q.Arg.EmitStruct() {
-					for _, f := range q.Arg.Struct.Fields {
-						if hasPrefixIgnoringSliceAndPointerPrefix(f.Type, name) {
-							return true
-						}
+			if q.Arg.EmitStruct() {
+				for _, f := range q.Arg.Struct.Fields {
+					if hasPrefixIgnoringSliceAndPointerPrefix(f.Type, name) {
+						return true
 					}
 				}
-				if hasPrefixIgnoringSliceAndPointerPrefix(q.Arg.Type(), name) {
+			}
+			for _, f := range q.Arg.Pairs() {
+				if hasPrefixIgnoringSliceAndPointerPrefix(f.Type, name) {
 					return true
 				}
 			}

@@ -6,11 +6,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"go/format"
 	"strings"
 	"text/template"
 
 	// DIFF: replace official's imports
 	"buf.build/gen/go/sqlc/sqlc/protocolbuffers/go/protos/plugin"
+	"github.com/meta-programming/go-codegenutil/unusedimports"
 	"github.com/sqlc-dev/sqlc-go/metadata"
 	"github.com/sqlc-dev/sqlc-go/sdk"
 	"github.com/topazur/sqlc-gen-go-separate/internal/patch"
@@ -224,6 +226,11 @@ func generate(req *plugin.CodeGenRequest, enums []Enum, structs []Struct, querie
 		if err != nil {
 			return err
 		}
+		code, err := format.Source(b.Bytes())
+		if err != nil {
+			fmt.Println(b.String())
+			return fmt.Errorf("source error: %w", err)
+		}
 
 		// output filename
 		if templateName == "queryFile" && golang.OutputFilesSuffix != "" {
@@ -239,19 +246,12 @@ func generate(req *plugin.CodeGenRequest, enums []Enum, structs []Struct, querie
 			name += ".go"
 		}
 
-		// gofmt & unusedimports
-		sourceCode, err := patch.FormatTmpl(b.String()).Source()
+		codeStr, err := unusedimports.PruneUnparsed(name, string(code))
 		if err != nil {
-			// fmt.Println(sourceCode.String())
-			return fmt.Errorf("format.Source error: %w", err)
-		}
-		unusedCode, err := sourceCode.Unusedimports(name)
-		if err != nil {
-			// fmt.Println(unusedCode.String())
-			return fmt.Errorf("unusedimports error: %w", err)
+			return fmt.Errorf("unusedimports.PruneUnparsed error: %w", err)
 		}
 
-		output[name] = unusedCode.String()
+		output[name] = codeStr
 		return nil
 	}
 
@@ -268,7 +268,9 @@ func generate(req *plugin.CodeGenRequest, enums []Enum, structs []Struct, querie
 		querierFileName = golang.OutputQuerierFileName
 	}
 	copyfromFileName := "copyfrom.go"
-	// TODO(Jille): Make this configurable.
+	// if golang.OutputCopyfromFileName != "" {
+	// 	copyfromFileName = golang.OutputCopyfromFileName
+	// }
 
 	batchFileName := "batch.go"
 	if golang.OutputBatchFileName != "" {
@@ -345,7 +347,10 @@ func usesBatch(queries []Query) bool {
 
 func checkNoTimesForMySQLCopyFrom(queries []Query) error {
 	for _, q := range queries {
-		for _, f := range q.Arg.Fields() {
+		if q.Cmd != metadata.CmdCopyFrom {
+			continue
+		}
+		for _, f := range q.Arg.CopyFromMySQLFields() {
 			if f.Type == "time.Time" {
 				return fmt.Errorf("values with a timezone are not yet supported")
 			}
