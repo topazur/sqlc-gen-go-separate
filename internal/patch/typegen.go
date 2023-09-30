@@ -2,6 +2,7 @@ package patch
 
 import (
 	"fmt"
+	"strings"
 	"unicode"
 )
 
@@ -17,6 +18,7 @@ var (
 
 // GetTypeImportParams 生成被分离出去的type包的import链接
 func GetTypeImportParams() (string, string) {
+	// eg: "dt", "github.com/xxx/xxx/dt"
 	return typePackage, moduleName + "/" + typeOut
 }
 
@@ -40,5 +42,12 @@ func GetTypePackage() string {
 // `../${typeOut}` 是为了和 req.Settings.Go.Out 保持同级目录
 // `${out}_${file}` 文件名统一加上 req.Settings.Go.Out 前缀，用以区分
 func GetTypeOutput(file string) string {
-	return fmt.Sprintf("../%s/%s_%s", typeOut, codeGenOut, file)
+	if file == "models.go" {
+		return fmt.Sprintf("../%s/db_%s", typeOut, file)
+	}
+
+	// 防止 `"out": "../internal/dao/xxx",` 中的/被解析成目录, 我们只需要最后一项xxx即可
+	parts := strings.Split(codeGenOut, "/")
+	lastItem := parts[len(parts)-1]
+	return fmt.Sprintf("../%s/%s_%s", typeOut, lastItem, file)
 }
