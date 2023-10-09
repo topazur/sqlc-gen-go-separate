@@ -42,8 +42,11 @@ func GetTypePackage() string {
 // `../${typeOut}` 是为了和 req.Settings.Go.Out 保持同级目录
 // `${out}_${file}` 文件名统一加上 req.Settings.Go.Out 前缀，用以区分
 func GetTypeOutput(file string) string {
-	if file == "models.go" {
-		return fmt.Sprintf("../%s/db_%s", typeOut, file)
+	// "omit_unused_structs": false
+	// 如果为true，sqlc将不会生成在给定包的查询中不使用的表和枚举结构。默认为false。
+	// 	设置成false，会生成全量的结构，包括不使用的表和枚举结构。无须防止模块间的类型冲突
+	if file == "models" {
+		return fmt.Sprintf("../%s/db_models", typeOut)
 	}
 
 	// 防止 `"out": "../internal/dao/xxx",` 中的/被解析成目录, 我们只需要最后一项xxx即可

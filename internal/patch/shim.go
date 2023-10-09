@@ -28,6 +28,9 @@ func PluginGoCode(s *plugin.GoCode) *plugin.GoCode {
 		*s.QueryParameterLimit = 1
 	}
 
+	// 默认生成全量的结构
+	s.OmitUnusedStructs = false
+
 	return s
 }
 
