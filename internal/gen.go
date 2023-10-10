@@ -115,7 +115,6 @@ func Generate(ctx context.Context, req *plugin.CodeGenRequest) (*plugin.CodeGenR
 		conf.TypePackage,
 		conf.TypeOut,
 		conf.ModuleName,
-		req.Settings.Codegen.Out,
 	)
 	// https://github.com/sql-dev/sqlc/blob/3c9ef73dd379613ff682326a58d402f0695f3242/internal/cmd/shim.go#L301
 	req.Settings.Go = patch.PluginGoCode(&conf.Go)
@@ -233,14 +232,19 @@ func generate(req *plugin.CodeGenRequest, enums []Enum, structs []Struct, querie
 		}
 
 		// output filename
+		// NOTICE: 当 "queries": ["queries/public_user.sql", "queries/public_rbac.sql"] 存在多个的时候，queryFile 和 typeFile 也会生成多个
 		if templateName == "queryFile" && golang.OutputFilesSuffix != "" {
+			// eg: 一个或多个，用 public_user.sql.sqlc.go 来命名，防止被覆盖
 			name += golang.OutputFilesSuffix
 		}
-		if templateName == "modelsFile" {
-			name = patch.GetTypeOutput("models")
-		}
 		if templateName == "typeFile" {
-			name = patch.GetTypeOutput("query")
+			// eg: 一个或多个，用 public_user.query.go 来命名，防止被覆盖
+			name = strings.Replace(name, ".sql", ".query", 1)
+			name = patch.GetQueryTypeOutput(name)
+		}
+		if templateName == "modelsFile" {
+			// 利用 "schema": "migration/" 和 omit_unused_structs 两个配置，使得生成一个model，不做出区分，也就不存在覆盖
+			name = patch.GetModelTypeOutput()
 		}
 		if !strings.HasSuffix(name, ".go") {
 			name += ".go"

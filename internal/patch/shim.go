@@ -2,7 +2,7 @@ package patch
 
 import "buf.build/gen/go/sqlc/sqlc/protocolbuffers/go/protos/plugin"
 
-func PluginTypeCode(typePackageArg, typeOutArg, moduleNameArg, codeGenOutArg string) {
+func PluginTypeCode(typePackageArg, typeOutArg, moduleNameArg string) {
 	if typePackageArg != "" {
 		typePackage = typePackageArg
 	}
@@ -13,10 +13,6 @@ func PluginTypeCode(typePackageArg, typeOutArg, moduleNameArg, codeGenOutArg str
 
 	if moduleNameArg != "" {
 		moduleName = moduleNameArg
-	}
-
-	if codeGenOutArg != "" {
-		codeGenOut = codeGenOutArg
 	}
 }
 
