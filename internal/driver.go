@@ -8,11 +8,13 @@ const (
 	SQLPackageStandard string = "database/sql"
 )
 
+// only the first constant in this group has an explicit type (SA9004)
+// 全指定类型 或 全不指定类型
 const (
 	SQLDriverPGXV4            SQLDriver = "github.com/jackc/pgx/v4"
-	SQLDriverPGXV5                      = "github.com/jackc/pgx/v5"
-	SQLDriverLibPQ                      = "github.com/lib/pq"
-	SQLDriverGoSQLDriverMySQL           = "github.com/go-sql-driver/mysql"
+	SQLDriverPGXV5            SQLDriver = "github.com/jackc/pgx/v5"
+	SQLDriverLibPQ            SQLDriver = "github.com/lib/pq"
+	SQLDriverGoSQLDriverMySQL SQLDriver = "github.com/go-sql-driver/mysql"
 )
 
 func parseDriver(sqlPackage string) SQLDriver {
@@ -43,4 +45,8 @@ func (d SQLDriver) Package() string {
 	default:
 		return SQLPackageStandard
 	}
+}
+
+func (d SQLDriver) Equal(sqlDriver string) bool {
+	return sqlDriver == string(d)
 }
