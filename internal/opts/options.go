@@ -43,6 +43,8 @@ type Options struct {
 	OmitSqlcVersion             bool              `json:"omit_sqlc_version,omitempty" yaml:"omit_sqlc_version"`
 	OmitUnusedStructs           bool              `json:"omit_unused_structs,omitempty" yaml:"omit_unused_structs"`
 	BuildTags                   string            `json:"build_tags,omitempty" yaml:"build_tags"`
+	// NOTICE: Custom fields
+	ModuleName string `json:"module_name"` // 确定 dbtype 包路径的 module 名称
 }
 
 type GlobalOptions struct {

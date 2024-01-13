@@ -10,6 +10,7 @@ import (
 	"strings"
 	"text/template"
 
+	"github.com/meta-programming/go-codegenutil/unusedimports"
 	"github.com/sqlc-dev/plugin-sdk-go/metadata"
 	"github.com/sqlc-dev/plugin-sdk-go/plugin"
 	"github.com/sqlc-dev/plugin-sdk-go/sdk"
@@ -255,14 +256,50 @@ func generate(req *plugin.GenerateRequest, options *opts.Options, enums []Enum, 
 			return fmt.Errorf("source error: %w", err)
 		}
 
+		/*
+			NOTICE: 当 "queries": ["queries/one.sql", "queries/two.sql"] 存在多个的时候，queryFile 和 typeFile 也会生成多个
+			rootDir
+			├── outDir
+			│   ├── db.go
+			│   ├── db_batch.go
+			│   ├── db_querier.go
+			│   └── ****.sql.sqlc.go # queryFile
+			├── dbtype
+			│   ├── db_models.go # 表定义
+			│   └── ****.query.go # typeFile
+			├── db.go # 聚合所有方法
+			└── ****.go # 其他文件
+		*/
 		if templateName == "queryFile" && options.OutputFilesSuffix != "" {
+			// eg: `****.sql.sqlc.go` => `outDir/****.sql.sqlc.go`
 			name += options.OutputFilesSuffix
+		}
+
+		// NOTICE: 分离点 - queryFile's type
+		if templateName == "typeFile" {
+			// eg: `../dbtype/****.tsql.go` => `dbtype/****.tsql.go`，其中 dbtype 和 outDir 是同级的目录
+			name = strings.Replace(name, ".sql", ".tsql", 1)
+			name = fmt.Sprintf("../dbtype/%s", name)
+		}
+
+		// NOTICE: 分离点 - models
+		if templateName == "modelsFile" {
+			// 利用 `"schema": "migration/*"` 和 `"omit_unused_structs": false` 两个配置，最终仅生成一个model，包含全量的表定义。无须防止模块间的类型冲突
+			// eg: `../dbtype/db_models.go` => `dbtype/db_models.go`
+			name = fmt.Sprintf("../dbtype/%s", options.OutputModelsFileName)
 		}
 
 		if !strings.HasSuffix(name, ".go") {
 			name += ".go"
 		}
-		output[name] = string(code)
+
+		// NOTICE: 删除多余的 import 语句，未使用的 package 会被移除
+		codeStr, err := unusedimports.PruneUnparsed(name, string(code))
+		if err != nil {
+			return fmt.Errorf("unusedimports.PruneUnparsed error: %w", err)
+		}
+
+		output[name] = codeStr
 		return nil
 	}
 
@@ -317,6 +354,11 @@ func generate(req *plugin.GenerateRequest, options *opts.Options, enums []Enum, 
 
 	for source := range files {
 		if err := execute(source, "queryFile"); err != nil {
+			return nil, err
+		}
+
+		// NOTICE: 由于 SQLGo 模式的类型都是生成在query文件里，所以这里无需对 copyfromFileName、batchFileName 两种文件额外处理
+		if err := execute(source, "typeFile"); err != nil {
 			return nil, err
 		}
 	}

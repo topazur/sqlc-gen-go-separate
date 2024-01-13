@@ -3,6 +3,7 @@ package golang
 import (
 	"fmt"
 	"strings"
+	"unicode"
 
 	"github.com/sqlc-dev/plugin-sdk-go/metadata"
 	"github.com/sqlc-dev/plugin-sdk-go/plugin"
@@ -92,12 +93,23 @@ func (v QueryValue) Type() string {
 	panic("no type for QueryValue: " + v.Name)
 }
 
+// NOTICE: ExportedType 使用type包中的类型时加上包名
+func ExportedType(t string) string {
+	// 判断首字母是否为小写字母 <大写才是从 dbtype 导入>
+	isLower := unicode.IsLower([]rune(t)[0])
+	if isLower {
+		return t
+	}
+
+	return "dbtype." + t
+}
+
 func (v *QueryValue) DefineType() string {
 	t := v.Type()
 	if v.IsPointer() {
-		return "*" + t
+		return "*" + ExportedType(t)
 	}
-	return t
+	return ExportedType(t)
 }
 
 func (v *QueryValue) ReturnName() string {

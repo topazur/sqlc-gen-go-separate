@@ -97,19 +97,25 @@ func (i *importer) Imports(filename string) [][]ImportSpec {
 		batchFileName = i.Options.OutputBatchFileName
 	}
 
+	// NOTICE: 包 dbtype 的导入
+	dbTypeImport := fileImports{
+		Std: []ImportSpec{},
+		Dep: []ImportSpec{{ID: "dbtype", Path: i.Options.ModuleName}},
+	}
+
 	switch filename {
 	case dbFileName:
-		return mergeImports(i.dbImports())
+		return mergeImports(i.dbImports(), dbTypeImport)
 	case modelsFileName:
-		return mergeImports(i.modelImports())
+		return mergeImports(i.modelImports(), dbTypeImport)
 	case querierFileName:
-		return mergeImports(i.interfaceImports())
+		return mergeImports(i.interfaceImports(), dbTypeImport)
 	case copyfromFileName:
-		return mergeImports(i.copyfromImports())
+		return mergeImports(i.copyfromImports(), dbTypeImport)
 	case batchFileName:
-		return mergeImports(i.batchImports())
+		return mergeImports(i.batchImports(), dbTypeImport)
 	default:
-		return mergeImports(i.queryImports(filename))
+		return mergeImports(i.queryImports(filename), dbTypeImport)
 	}
 }
 
