@@ -227,8 +227,8 @@ func generate(req *plugin.GenerateRequest, options *opts.Options, enums []Enum, 
 			Funcs(funcMap).
 			ParseFS(
 				templates,
-				"templates/*.tmpl",
-				"templates/*/*.tmpl",
+				"templates2/*.tmpl",
+				"templates2/*/*.tmpl",
 			),
 	)
 
