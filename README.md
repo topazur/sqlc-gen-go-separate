@@ -23,3 +23,9 @@ So when using it, only focus on types and aggregation functions.
 - [templates folder](https://github.com/topazur/sqlc-gen-go-separate/tree/main/internal/templates)
 
 - [patch folder](https://github.com/topazur/sqlc-gen-go-separate/tree/main/internal/patch)
+
+### version
+
+- 当前版本的 major、minor 始终与与 [sqlc official version](https://github.com/sqlc-dev/sqlc/releases/latest) 一致。
+
+- 修订版本号 patch 为该插件的调试版本号
