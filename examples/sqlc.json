@@ -1,0 +1,101 @@
+{
+  "version": "2",
+  "plugins": [
+    {
+      "name": "golang",
+      "wasm": {
+        "url": "https://github.com/topazur/sqlc-gen-go-separate/releases/download/v1.25.1/sqlc-gen-golang.wasm",
+        "sha256": "1e97e2795fd19b52c4f4422c9f25a8f15cc8ca654e8e7c1a07b72adad9a68aaf"
+      }
+    }
+  ],
+  "sql": [
+    {
+      "strict_function_checks": true,
+      "strict_order_by": true,
+      "engine": "postgresql",
+      "schema": "./*.sql",
+      "queries": [
+        "bar1_1.sql",
+        "bar1_2.sql"
+      ],
+      "codegen": [
+        {
+          "plugin": "golang",
+          "out": "bar1",
+          "options": {
+            "sql_package": "pgx/v5",
+            "package": "db",
+            "out": "bar1",
+            "module_name": "github.com/topazur/sqlc-gen-go-separate/examples/dbtype",
+            "output_db_file_name": "db.go",
+            "output_querier_file_name": "db_querier.go",
+            "output_batch_file_name": "db_batch.go",
+            "output_models_file_name": "db_models.go",
+            "output_files_suffix": ".sqlc",
+            "emit_interface": true,
+            "emit_prepared_queries": false,
+            "emit_exact_table_names": false,
+            "emit_json_tags": true,
+            "emit_db_tags": true,
+            "json_tags_case_style": "camel",
+            "json_tags_id_uppercase": false,
+            "emit_empty_slices": true,
+            "emit_enum_valid_method": true,
+            "emit_all_enum_values": true,
+            "emit_result_struct_pointers": false,
+            "emit_params_struct_pointers": false,
+            "emit_methods_with_db_argument": false,
+            "emit_exported_queries": true,
+            "emit_pointers_for_null_types": false,
+            "query_parameter_limit": 0,
+            "omit_unused_structs": false
+          }
+        }
+      ]
+    },
+    {
+      "strict_function_checks": true,
+      "strict_order_by": true,
+      "engine": "postgresql",
+      "schema": "./*.sql",
+      "queries": [
+        "bar2.sql"
+      ],
+      "codegen": [
+        {
+          "plugin": "golang",
+          "out": "bar2",
+          "options": {
+            "sql_package": "pgx/v5",
+            "package": "db",
+            "out": "bar2",
+            "module_name": "github.com/topazur/sqlc-gen-go-separate/examples/dbtype",
+            "output_db_file_name": "db.go",
+            "output_querier_file_name": "db_querier.go",
+            "output_batch_file_name": "db_batch.go",
+            "output_models_file_name": "db_models.go",
+            "output_files_suffix": ".sqlc",
+            "emit_interface": true,
+            "emit_prepared_queries": false,
+            "emit_exact_table_names": false,
+            "emit_json_tags": true,
+            "emit_db_tags": true,
+            "json_tags_case_style": "camel",
+            "json_tags_id_uppercase": false,
+            "emit_empty_slices": true,
+            "emit_enum_valid_method": true,
+            "emit_all_enum_values": true,
+            "emit_result_struct_pointers": false,
+            "emit_params_struct_pointers": false,
+            "emit_methods_with_db_argument": false,
+            "emit_exported_queries": true,
+            "emit_pointers_for_null_types": false,
+            "query_parameter_limit": 0,
+            "omit_unused_structs": false
+          }
+        }
+      ]
+    }
+  ]
+}
