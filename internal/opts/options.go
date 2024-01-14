@@ -9,6 +9,8 @@ import (
 	"github.com/sqlc-dev/plugin-sdk-go/plugin"
 )
 
+const DBTYPE_PACKAGE string = "dbtype"
+
 type Options struct {
 	EmitInterface               bool              `json:"emit_interface" yaml:"emit_interface"`
 	EmitJsonTags                bool              `json:"emit_json_tags" yaml:"emit_json_tags"`
@@ -44,6 +46,8 @@ type Options struct {
 	OmitUnusedStructs           bool              `json:"omit_unused_structs,omitempty" yaml:"omit_unused_structs"`
 	BuildTags                   string            `json:"build_tags,omitempty" yaml:"build_tags"`
 	// NOTICE: Custom fields
+	// TypePackage string `json:"type_package"` // 生成类型包的包名。默认为 dbtype。
+	// TypeOut     string `json:"type_out"`     // 生成类型包的输出目录名，与out是同级目录。默认为 dbtype。
 	ModuleName string `json:"module_name"` // 确定 dbtype 包路径的 module 名称
 }
 

@@ -7,6 +7,7 @@ import (
 
 	"github.com/sqlc-dev/plugin-sdk-go/metadata"
 	"github.com/sqlc-dev/plugin-sdk-go/plugin"
+	"github.com/topazur/sqlc-gen-go-separate/internal/opts"
 )
 
 type QueryValue struct {
@@ -101,7 +102,7 @@ func ExportedType(t string) string {
 		return t
 	}
 
-	return "dbtype." + t
+	return fmt.Sprintf("%s.%s", opts.DBTYPE_PACKAGE, t)
 }
 
 func (v *QueryValue) DefineType() string {

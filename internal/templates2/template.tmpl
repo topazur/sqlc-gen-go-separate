@@ -67,8 +67,7 @@ import (
 //   sqlc {{.SqlcVersion}}
 {{end}}
 
-{/* package {{.Package}} */}
-package dbtype
+package {{.TypePackage}}
 
 import (
 	{{range imports .SourceName}}
@@ -250,8 +249,7 @@ import (
 //   sqlc {{.SqlcVersion}}
 {{end}}// source: {{.SourceName}}
 
-{/* package {{.Package}} */}
-package dbtype
+package {{.TypePackage}}
 
 import (
 	{{range imports .SourceName}}

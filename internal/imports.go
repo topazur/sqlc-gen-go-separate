@@ -100,7 +100,7 @@ func (i *importer) Imports(filename string) [][]ImportSpec {
 	// NOTICE: 包 dbtype 的导入
 	dbTypeImport := fileImports{
 		Std: []ImportSpec{},
-		Dep: []ImportSpec{{ID: "dbtype", Path: i.Options.ModuleName}},
+		Dep: []ImportSpec{{ID: opts.DBTYPE_PACKAGE, Path: i.Options.ModuleName}},
 	}
 
 	switch filename {

@@ -20,6 +20,7 @@ import (
 type tmplCtx struct {
 	Q           string
 	Package     string
+	TypePackage string
 	SQLDriver   SQLDriver
 	Enums       []Enum
 	Structs     []Struct
@@ -183,6 +184,7 @@ func generate(req *plugin.GenerateRequest, options *opts.Options, enums []Enum, 
 		SQLDriver:                 parseDriver(options.SqlPackage),
 		Q:                         "`",
 		Package:                   options.Package,
+		TypePackage:               opts.DBTYPE_PACKAGE,
 		Enums:                     enums,
 		Structs:                   structs,
 		SqlcVersion:               req.SqlcVersion,
@@ -279,14 +281,14 @@ func generate(req *plugin.GenerateRequest, options *opts.Options, enums []Enum, 
 		if templateName == "typeFile" {
 			// eg: `../dbtype/****.tsql.go` => `dbtype/****.tsql.go`，其中 dbtype 和 outDir 是同级的目录
 			name = strings.Replace(name, ".sql", ".tsql", 1)
-			name = fmt.Sprintf("../dbtype/%s", name)
+			name = fmt.Sprintf("../%s/%s", opts.DBTYPE_PACKAGE, name)
 		}
 
 		// NOTICE: 分离点 - models
 		if templateName == "modelsFile" {
 			// 利用 `"schema": "migration/*"` 和 `"omit_unused_structs": false` 两个配置，最终仅生成一个model，包含全量的表定义。无须防止模块间的类型冲突
 			// eg: `../dbtype/db_models.go` => `dbtype/db_models.go`
-			name = fmt.Sprintf("../dbtype/%s", options.OutputModelsFileName)
+			name = fmt.Sprintf("../%s/%s", opts.DBTYPE_PACKAGE, options.OutputModelsFileName)
 		}
 
 		if !strings.HasSuffix(name, ".go") {
